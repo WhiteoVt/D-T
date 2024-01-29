@@ -1,0 +1,76 @@
+version: '4.25.0'
+
+services: 
+
+  database:
+    container_name: postgresql_db
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=DiceAndTiles
+      - POSTGRES_USER=maciej
+      - POSTGRES_PASSWORD=maciej
+    ports: 
+      - "5432:5432"
+
+  pgadmin4: 
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: maciej@root.com
+      PGADMIN_DEFAULT_PASSWORD: maciej
+    ports: 
+      - "5050:80"
+
+
+  django:
+    container_name: django_web
+    build: ./DiceAndTiles-Backend
+    command: python manage.py runserver 0.0.0.0:8000 --settings=diceandtiles.settingsdocker
+    volumes:
+      - ./DiceAndTiles-Backend:/code
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_DB=DiceAndTiles
+      - POSTGRES_USER=maciej
+      - POSTGRES_PASSWORD=maciej
+    depends_on:
+      - database
+
+  fastapi: 
+    container_name: fastapi_web
+    build: ./FastAPI-scrapper
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - ./FastAPI-scrapper:/code
+    ports:
+      - "8001:8001"
+    environment:
+      - POSTGRES_DB=DiceAndTiles
+      - POSTGRES_USER=fastapi
+      - POSTGRES_PASSWORD=fastapi
+    depends_on:
+      - database
+
+  fastapirec: 
+    container_name: fastapi_web_recommendation
+    build: ./FastAPI-recommendation
+    command: uvicorn main:app --host 0.0.0.0 --port 8002
+    volumes:
+      - ./FastAPI-recommendation:/code
+    ports:
+      - "8002:8002"
+    environment:
+      - POSTGRES_DB=DiceAndTiles
+      - POSTGRES_USER=fastapi
+      - POSTGRES_PASSWORD=fastapi
+    depends_on:
+      - database
+
+  react_app:
+        build: ./react-app
+        container_name: react_app_c
+        ports:
+          - '3000:3000'

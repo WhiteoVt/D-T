@@ -1,0 +1,15 @@
+version: '4.25.0'
+
+services:
+  fastapi_web:
+    container_name: fastapi_web
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - .:/code
+    ports:
+      - "8001:8001"
+    environment:
+      - POSTGRES_DB=DiceAndTiles
+      - POSTGRES_USER=fastapi
+      - POSTGRES_PASSWORD=fastapi
